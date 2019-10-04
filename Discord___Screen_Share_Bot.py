@@ -8,7 +8,6 @@ import logging
 
 Token = "****-****-****"
 client = discord.Client()
-DBO = None
 Presence = None
 
 bot_ad = "\n\n[Get Screen Share Bot for your discord](https://discordapp.com/oauth2/authorize?client_id=614471567749021727&scope=bot&permissions=3072)"
@@ -94,33 +93,6 @@ async def on_message(message):
                                             embed=discord.Embed(title="The specified channel does not belong to your discord.", description=""+bot_ad, color=0xff0000)
                                             await message.channel.send(embed=embed)               
 
-class DiscordBotsOrgAPI:
-    def __init__(self, client):
-        self.client = client
-        self.token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYxNDQ3MTU2Nzc0OTAyMTcyNyIsImJvdCI6dHJ1ZSwiaWF0IjoxNTY2ODUxMTY1fQ.DnQLfx6dqZjvnGs5D9WzyzCj2PFdqUyoEUQQxGkVRUg'
-        self.dblpy = dbl.DBLClient(client, self.token)
-        self.loop = self.client.loop.create_task(self.update_stats())
-
-    def stop(self):
-        self.loop.cancel()
-
-    async def update_stats(self):
-        """This function runs every 30 minutes to automatically update your server count"""
-        while not self.client.is_closed():
-            #print('Attempting to post server count')
-            logging.debug('Attempting to post server count')
-            try:
-                await self.dblpy.post_guild_count()
-                #print('Posted server count ({})'.format(self.dblpy.guild_count()))
-                logging.debug('Posted server count ({})'.format(self.dblpy.guild_count()))
-            except Exception as e:
-                #print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-                logging.debug('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-            await asyncio.sleep(12)
-
-    async def get_vote(self, userid):
-        return await self.dblpy.get_user_vote(int(userid))
-
 class PresenceLoop():
     def __init__(self, client):
         self.client = client
@@ -150,14 +122,11 @@ class PresenceLoop():
 async def on_ready():
     msg = 'Logged in as ' + client.user.name + ":" + str(client.user.id)
     print(msg)
-    print('-' * len(msg))
-    global DBO
-    DBO = DiscordBotsOrgAPI(client)
+    print('-' * len(msg)))
     global Presence
     Presence = PresenceLoop(client)
 
 def sigint_handler(signum, frame):
-    DBO.stop()
     Presence.stop()
     exit (0);
  
