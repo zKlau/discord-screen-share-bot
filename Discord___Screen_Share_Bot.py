@@ -3,20 +3,25 @@ import asyncio
 import shlex
 import dbl
 import signal
+import math
+import logging
 
-Token = "NjE0NDcxNTY3NzQ5MDIxNzI3.XV_9Rg.ozq08IVJNDt8zbzxojMDtST3dXw"
+#logging.basicConfig(filename='example.log',level=logging.DEBUG)
+#logging.basicConfig(level=logging.DEBUG)
+
+#Token = "NjE0NDcxNTY3NzQ5MDIxNzI3.XV_9Rg.ozq08IVJNDt8zbzxojMDtST3dXw"
 
 #TESTBOT
-#Token = "NjE1NjIwMTYxMDA0ODk2MzA2.XWQq9w.p-xGYYyV7SARUBeRERtaiqlLhcU"
+Token = "NjE1NjIwMTYxMDA0ODk2MzA2.XWQq9w.p-xGYYyV7SARUBeRERtaiqlLhcU"
 client = discord.Client()
 DBO = None
 Presence = None
 
+bot_ad = "\n\n[Get Screen Share Bot for your discord](https://discordapp.com/oauth2/authorize?client_id=614471567749021727&scope=bot&permissions=3072)"
+
 @client.event
 async def on_message(message):
     author = message.author
-
-    bot_ad = "\n\n[Get Screen Share Bot for your discord](https://discordapp.com/oauth2/authorize?client_id=614471567749021727&scope=bot&permissions=3072)"
 
     if author == client.user:
         return
@@ -34,7 +39,6 @@ async def on_message(message):
             embed.add_field(name="!screenshare <ChannelID> <OutputChannel>", value="Outputs the link for the correspondant channel nicely into the OutputChannel\nDoes only work if you upvoted [HERE](https://discordbots.org/bot/614471567749021727)", inline=False)
 
             await message.channel.send(embed=embed)
-            await message.channel.send(await DBO.get_vote(message.author.id))
     elif len(message.content.lower().split()) >= 1:
         if message.content.lower().split()[0] == "!screenshare":
             if message.author.guild_permissions.administrator:
@@ -51,20 +55,19 @@ async def on_message(message):
                         await message.channel.send(embed=embed)
                     else:
                         if input[1].isdigit():
-                            link = "https://discordapp.com/channels/" + str(message.guild.id) + "/" + input[1]
+                            link = "https://discordapp.com/channels/" + str(message.guild.id) + "/{}".format(input[1])
                         else:
                             ChannelID = discord.utils.get(message.guild.voice_channels, name=input[1])
                             try:
                                 link = "https://discordapp.com/channels/" + str(message.guild.id) + "/" + str(ChannelID.id)
                             except AttributeError as e:
                                 if str(e) == "'NoneType' object has no attribute 'id'":
-                                    embed=discord.Embed(title='Hi, sadly the voice-channel specified was not found.", description="If you have spaced in your channel name, try surrounding it with ``"``', color=0xff0000)
+                                    embed=discord.Embed(title="Hi, sadly the voice-channel specified was not found.", description='If you have spaced in your channel name, try surrounding it with ``"``', color=0xff0000)
                                     await message.channel.send(embed = embed)
-
                         if len(input) == 2:
                             embed=discord.Embed(title="", description="", color=0xffff00)
                             try:
-                                embed.add_field(name="Have fun with your link :)", value="["+link+"]"+"("+link+")"+bot_ad, inline=False)
+                                embed.add_field(name="Have fun with your link :)", value="[{}]({})".format(link,link)+bot_ad, inline=False)
                             except UnboundLocalError as e:
                                 if str(e) == "local variable 'link' referenced before assignment":
                                     pass
@@ -77,7 +80,7 @@ async def on_message(message):
                             else:
                                 embed=discord.Embed(title="", description="", color=0xffff00)
                                 try:
-                                    embed.add_field(name="Screenshare: ", value="[CLICK HERE]"+"("+link+")"+bot_ad, inline=False)
+                                    embed.add_field(name="Screenshare: ", value="[CLICK HERE]"+"({})".format(link)+bot_ad, inline=False)
                                 except UnboundLocalError as e:
                                     if str(e) == "local variable 'link' referenced before assignment":
                                         pass
@@ -110,13 +113,16 @@ class DiscordBotsOrgAPI:
     async def update_stats(self):
         """This function runs every 30 minutes to automatically update your server count"""
         while not self.client.is_closed():
-            print('Attempting to post server count')
+            #print('Attempting to post server count')
+            logging.debug('Attempting to post server count')
             try:
                 await self.dblpy.post_guild_count()
-                print('Posted server count ({})'.format(self.dblpy.guild_count()))
+                #print('Posted server count ({})'.format(self.dblpy.guild_count()))
+                logging.debug('Posted server count ({})'.format(self.dblpy.guild_count()))
             except Exception as e:
-                print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
-            await asyncio.sleep(10)
+                #print('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
+                logging.debug('Failed to post server count\n{}: {}'.format(type(e).__name__, e))
+            await asyncio.sleep(12)
 
     async def get_vote(self, userid):
         return await self.dblpy.get_user_vote(int(userid))
@@ -131,13 +137,19 @@ class PresenceLoop():
 
     async def my_background_task(self):
         await self.client.wait_until_ready()
-        wait_time = 10
+        wait_time = 12
         while not self.client.is_closed():
-            await self.client.change_presence(status=discord.Status.dnd, afk=False, activity=discord.Activity(type=discord.ActivityType.watching, name=str(len(client.guilds))+" Guilds"))
+            await self.client.change_presence(status=discord.Status.do_not_disturb, afk=False, activity=discord.Activity(type=discord.ActivityType.watching, name="{} Guilds".format(str(len(client.guilds)))))
             print("[PRESENCE] Changed to Guilds")
             await asyncio.sleep(wait_time)
-            await self.client.change_presence(status=discord.Status.dnd, afk=False, activity=discord.Activity(type=discord.ActivityType.listening, name="!screenshare"))
+            await self.client.change_presence(status=discord.Status.do_not_disturb, afk=False, activity=discord.Activity(type=discord.ActivityType.listening, name="!screenshare"))
             print("[PRESENCE] Changed to Command")
+            await asyncio.sleep(wait_time)
+            await self.client.change_presence(status=discord.Status.do_not_disturb, afk=False, activity=discord.Activity(type=discord.ActivityType.watching, name="a delay of {} MS".format(str(round(client.latency * 100)))))
+            print("[PRESENCE] Changed to Command")
+            await asyncio.sleep(wait_time)
+            await self.client.change_presence(status=discord.Status.do_not_disturb, afk=False, activity=discord.Activity(type=discord.ActivityType.watching, name="{} Users".format(str(len(client.users)))))
+            print("[PRESENCE] Changed to Guilds")
             await asyncio.sleep(wait_time)
 
 @client.event
