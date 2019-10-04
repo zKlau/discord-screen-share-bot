@@ -6,13 +6,7 @@ import signal
 import math
 import logging
 
-#logging.basicConfig(filename='example.log',level=logging.DEBUG)
-#logging.basicConfig(level=logging.DEBUG)
-
-#Token = "NjE0NDcxNTY3NzQ5MDIxNzI3.XV_9Rg.ozq08IVJNDt8zbzxojMDtST3dXw"
-
-#TESTBOT
-Token = "NjE1NjIwMTYxMDA0ODk2MzA2.XWQq9w.p-xGYYyV7SARUBeRERtaiqlLhcU"
+Token = "****-****-****"
 client = discord.Client()
 DBO = None
 Presence = None
@@ -169,14 +163,4 @@ def sigint_handler(signum, frame):
  
 signal.signal(signal.SIGINT, sigint_handler)
 
-client.run(Token)
-"""
-try:
-    client.run(Token)
-except RuntimeError as e:
-    if str(e) == "Event loop stopped before Future completed.":
-        DBO.stop()
-        Presence.stop()
-    else:
-        raise e
-"""
+client.run(TOKEN)
