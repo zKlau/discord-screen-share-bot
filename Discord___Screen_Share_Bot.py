@@ -1,7 +1,6 @@
 import discord
 import asyncio
 import shlex
-import dbl
 import signal
 import math
 import logging
